@@ -53,9 +53,14 @@ What we _cannot_ ignore:
 Next, read over http://source.android.com/source/initializing.html#setting-up-a-mac-os-x-build-environment
 to make sure that your system is set up for building. One important note from this document that
 you really do need to follow is creating the `android.dmg` virtual hard drive, in order to support
-a case-sensitive filesystem. Downgrading gmake was not necessary for me, and I did not enable
-ccache. It would probably work just as well if you follow Google's instructions, so enable it if
-you want to.
+a case-sensitive filesystem. However, note that the suggested disk size of `40g` _is not enough_
+to get a full build. I ran into errors stating: `can't write to output file (No space left on device)`,
+so I would suggest giving the initial `android.dmg` more space. If you already created it with `40g`,
+that's okay because you can resize it later (see the link above for the `resize` command). I had
+to resize mine to `60g`.
+
+Downgrading gmake was not necessary for me, and I did not enable ccache. It should work just as
+well if you follow Google's instructions, so enable it if you want to.
 
 ## Downloading the source
 
@@ -99,4 +104,30 @@ build using the proper versions:
 
 After that, you should (hopefully) have everything you need to start building, and now you can
 once again resume building by following the [platform_manifest/README](https://github.com/Nu3001/platform_manifest/blob/master/README.md)
-document, starting first with building the kernel, and then building android, and so on.
+document, starting first with building the kernel, and then building android, and so on. See below
+for some notes that differ compared to the main xdAuto readme.
+
+### Building the Kernel
+
+1. Note that the `CROSS_COMPILE` var references `linux-x86`, which is wrong for a Mac OS X build.
+    Instead it should be `darwin-x86`:
+
+    ```
+    $ export CROSS_COMPILE=../prebuilts/gcc/darwin-x86/arm/arm-eabi-4.6/bin/arm-eabi-
+    ```
+
+2. You may run into an error trying to find the `elf.h` header, which probably does not exist
+    in your system. As a workaround, you can copy the existing `elf.h` header from the kernel
+    source into your local includes:
+
+    ```
+    $ cp external/elfutils/libelf/elf.h /usr/local/include/
+    ```
+
+After those two things are fixed, you should be able to follow the remaining commands:
+
+```
+$ make amplified_defconfig
+$ make kernel.img
+$ make modules
+```
